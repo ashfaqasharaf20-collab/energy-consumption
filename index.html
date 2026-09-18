@@ -1,0 +1,337 @@
+```html
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EnergySmart India / Kerala - AI Consumption Predictor & Analytics</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
+            },
+            solar: {
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glass-card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card-hover {
+      transition: all 0.25s ease-in-out;
+    }
+    .glass-card-hover:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34, 197, 94, 0.3);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(34, 197, 94, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+
+  <!-- Header Navigation -->
+  <header class="sticky top-0 z-50 glass-card border-b border-slate-800 bg-slate-900/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Brand Logo -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 shadow-lg shadow-emerald-500/20">
+            <i class="fa-solid fa-bolt text-xl font-black"></i>
+          </div>
+          <div>
+            <span class="text-xl font-extrabold tracking-tight font-heading bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">
+              EnergySmart AI
+            </span>
+            <span class="block text-[10px] text-slate-400 font-medium tracking-wider uppercase">India & Kerala Household Analytics</span>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex space-x-1 lg:space-x-2">
+          <button onclick="switchTab('simulator')" id="nav-simulator" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-emerald-400 bg-emerald-950/60 border border-emerald-500/30">
+            <i class="fa-solid fa-sliders mr-1.5"></i> Predictor
+          </button>
+          <button onclick="switchTab('mlhub')" id="nav-mlhub" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+            <i class="fa-solid fa-brain mr-1.5"></i> ML Pipeline & Data
+          </button>
+          <button onclick="switchTab('solar')" id="nav-solar" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+            <i class="fa-solid fa-solar-panel mr-1.5"></i> Solar PV Offset
+          </button>
+          <button onclick="switchTab('tariff')" id="nav-tariff" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+            <i class="fa-solid fa-building-columns mr-1.5"></i> State Subsidies
+          </button>
+          <button onclick="switchTab('ppt')" id="nav-ppt" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+            <i class="fa-solid fa-file-powerpoint mr-1.5"></i> Presentation Deck
+          </button>
+          <button onclick="switchTab('advisor')" id="nav-advisor" class="tab-btn px-3 py-2 rounded-lg text-sm font-medium transition-all text-slate-300 hover:text-white hover:bg-slate-800">
+            <i class="fa-solid fa-robot mr-1.5 text-cyan-400"></i> AI Advisor
+          </button>
+        </nav>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+          <button onclick="toggleMobileMenu()" class="text-slate-300 hover:text-white p-2">
+            <i class="fa-solid fa-bars text-xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown Menu -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 bg-slate-900/95 px-4 pt-2 pb-4 space-y-2">
+      <button onclick="switchTab('simulator'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-emerald-400 bg-emerald-950/40">
+        <i class="fa-solid fa-sliders mr-2"></i> Energy Predictor
+      </button>
+      <button onclick="switchTab('mlhub'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300">
+        <i class="fa-solid fa-brain mr-2"></i> ML Pipeline & Data
+      </button>
+      <button onclick="switchTab('solar'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300">
+        <i class="fa-solid fa-solar-panel mr-2"></i> Solar PV Calculator
+      </button>
+      <button onclick="switchTab('tariff'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300">
+        <i class="fa-solid fa-building-columns mr-2"></i> State Tariff Subsidies
+      </button>
+      <button onclick="switchTab('ppt'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300">
+        <i class="fa-solid fa-file-powerpoint mr-2"></i> Presentation Deck
+      </button>
+      <button onclick="switchTab('advisor'); toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-lg text-sm font-medium text-slate-300">
+        <i class="fa-solid fa-robot mr-2 text-cyan-400"></i> AI Advisor
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- TAB 1: PREDICTOR & SIMULATOR -->
+    <section id="tab-simulator" class="tab-content space-y-6">
+      
+      <!-- Top Banner / Headline -->
+      <div class="glass-card rounded-2xl p-6 relative overflow-hidden bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/40 border border-slate-800">
+        <div class="relative z-10 max-w-3xl">
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mb-3 inline-block">
+            <i class="fa-solid fa-circle-check mr-1"></i> Calibrated for Realistic Indian Households
+          </span>
+          <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight font-heading">
+            Household Energy Consumption Predictor
+          </h1>
+          <p class="text-slate-300 mt-2 text-sm sm:text-base leading-relaxed">
+            Interactively model realistic daily energy usage with inverse Temperature-Humidity physics, resident occupancy limits, daily work routines, seasonal shifts, and solar generation.
+          </p>
+        </div>
+        <div class="absolute -right-8 -bottom-8 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      </div>
+
+      <!-- Main Predictor Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Controls Column (5 cols) -->
+        <div class="lg:col-span-5 space-y-6">
+
+          <!-- Card 1: Climate & Season Parameters -->
+          <div class="glass-card rounded-2xl p-5 border border-slate-800">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center font-heading">
+              <i class="fa-solid fa-cloud-sun text-amber-400 mr-2"></i> Climate & Seasons
+            </h3>
+
+            <!-- Season Selector -->
+            <div class="mb-5">
+              <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Select Season</label>
+              <div class="grid grid-cols-3 gap-2">
+                <button type="button" onclick="setSeason('summer')" id="season-summer" class="season-btn p-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 text-xs font-medium text-center transition">
+                  <i class="fa-solid fa-sun block text-base mb-1"></i> Summer
+                </button>
+                <button type="button" onclick="setSeason('monsoon')" id="season-monsoon" class="season-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-medium text-center transition">
+                  <i class="fa-solid fa-cloud-showers-heavy block text-base mb-1 text-cyan-400"></i> Monsoon
+                </button>
+                <button type="button" onclick="setSeason('winter')" id="season-winter" class="season-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-medium text-center transition">
+                  <i class="fa-solid fa-snowflake block text-base mb-1 text-blue-300"></i> Winter
+                </button>
+                <button type="button" onclick="setSeason('autumn')" id="season-autumn" class="season-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-medium text-center transition">
+                  <i class="fa-solid fa-leaf block text-base mb-1 text-orange-400"></i> Autumn
+                </button>
+                <button type="button" onclick="setSeason('spring')" id="season-spring" class="season-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-medium text-center transition">
+                  <i class="fa-solid fa-seedling block text-base mb-1 text-emerald-400"></i> Spring
+                </button>
+                <button type="button" onclick="setSeason('holiday')" id="season-holiday" class="season-btn p-2.5 rounded-xl border border-slate-700 bg-slate-800/60 text-slate-300 text-xs font-medium text-center transition">
+                  <i class="fa-solid fa-glass-cheers block text-base mb-1 text-purple-400"></i> Festival / Break
+                </button>
+              </div>
+            </div>
+
+            <!-- Temperature Slider & Coupling Toggle -->
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Temperature (°C)
+                </label>
+                <div class="flex items-center space-x-2">
+                  <span id="temp-val" class="text-sm font-bold text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-md border border-amber-500/20">33 °C</span>
+                  <label class="inline-flex items-center cursor-pointer text-xs text-slate-400" title="Inverse Temperature-Humidity coupling">
+                    <input type="checkbox" id="auto-coupling" checked onchange="recalculatePredictor()" class="sr-only peer">
+                    <div class="w-7 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500 relative"></div>
+                    <span class="ml-1 text-[10px]">Coupled</span>
+                  </label>
+                </div>
+              </div>
+              <input type="range" id="temp-range" min="15" max="45" value="33" step="1" oninput="onTempChange(this.value)" class="w-full accent-amber-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+
+              <!-- Humidity Slider -->
+              <div class="flex items-center justify-between pt-1">
+                <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                  Relative Humidity (%)
+                </label>
+                <span id="humidity-val" class="text-sm font-bold text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-md border border-cyan-500/20">55 %</span>
+              </div>
+              <input type="range" id="humidity-range" min="20" max="95" value="55" step="1" oninput="onHumidityChange(this.value)" class="w-full accent-cyan-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+
+              <p class="text-[11px] text-slate-400 bg-slate-900/80 p-2.5 rounded-lg border border-slate-800 flex items-start">
+                <i class="fa-solid fa-circle-info text-cyan-400 mt-0.5 mr-2 shrink-0"></i>
+                <span><strong>Thermodynamic Coupling:</strong> As Temp increases, Relative Humidity drops naturally for dry days. Heat Index recalculates dynamically to affect AC & cooling power draw.</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2: Household Occupancy & Schedule -->
+          <div class="glass-card rounded-2xl p-5 border border-slate-800">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center font-heading">
+              <i class="fa-solid fa-users text-emerald-400 mr-2"></i> Household Occupants & Routine
+            </h3>
+
+            <div class="space-y-4">
+              <!-- Number of People -->
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Total Residents in House</label>
+                  <span id="people-val" class="text-sm font-bold text-emerald-400">3 Persons</span>
+                </div>
+                <input type="range" id="people-range" min="1" max="10" value="3" step="1" oninput="recalculatePredictor()" class="w-full accent-emerald-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                <span class="text-[11px] text-slate-400">Limits concurrent appliance load (e.g. 2 people won't operate 8 ceiling fans simultaneously).</span>
+              </div>
+
+              <!-- Daytime Working / School Members -->
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Members Away During Day (Work/School)</label>
+                  <span id="work-val" class="text-sm font-bold text-teal-400">2 Members</span>
+                </div>
+                <input type="range" id="work-range" min="0" max="10" value="2" step="1" oninput="recalculatePredictor()" class="w-full accent-teal-500 bg-slate-800 rounded-lg cursor-pointer h-2">
+                <span class="text-[11px] text-slate-400">Lowers 9 AM–5 PM daytime power draw and shifts major cooling load to evening & night.</span>
+              </div>
+
+              <!-- Major Appliances Setup -->
+              <div class="pt-2 border-t border-slate-800/80">
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Installed Appliances</label>
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                  <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-slate-400 block mb-1">Air Conditioners</span>
+                    <select id="ac-count" onchange="recalculatePredictor()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-white focus:outline-none focus:border-emerald-500">
+                      <option value="0">0 ACs</option>
+                      <option value="1" selected>1 AC (1.5 Ton Inverter)</option>
+                      <option value="2">2 ACs</option>
+                      <option value="3">3 ACs</option>
+                    </select>
+                  </div>
+                  <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-slate-400 block mb-1">Ceiling Fans</span>
+                    <select id="fan-count" onchange="recalculatePredictor()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-white focus:outline-none focus:border-emerald-500">
+                      <option value="2">2 Fans</option>
+                      <option value="4" selected>4 Fans</option>
+                      <option value="6">6 Fans</option>
+                      <option value="8">8 Fans</option>
+                    </select>
+                  </div>
+                  <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-slate-400 block mb-1">Refrigerator</span>
+                    <select id="fridge-type" onchange="recalculatePredictor()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-white focus:outline-none focus:border-emerald-500">
+                      <option value="single">Single Door (180L)</option>
+                      <option value="double" selected>Double Door 5-Star (260L)</option>
+                      <option value="large">Side-by-Side (500L)</option>
+                    </select>
+                  </div>
+                  <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-slate-400 block mb-1">Water Heater / Geyser</span>
+                    <select id="geyser-usage" onchange="recalculatePredictor()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-1.5 text-white focus:outline-none focus:border-emerald-500">
+                      <option value="0">None / Summer OFF</option>
+                      <option value="0.5">30 Mins Daily</option>
+                      <option value="1" selected>1 Hour Daily</option>
+                      <option value="2">2 Hours Daily</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Card 3: Solar PV Rooftop & State Tariff -->
+          <div class="glass-card rounded-2xl p-5 border border-slate-800">
+            <h3 class="text-lg font-bold text-white mb-4 flex items-center font-heading">
+              <i class="fa-solid fa-solar-panel text-solar-400 mr-2"></i> Solar & Tariff State Policy
+            </h3>
+
+            <div class="space-y-4">
+              <!-- Solar Capacity Slider -->
+              <div>
+                <div class="flex justify-between items-center mb-1">
+                  <label class="text-xs font-semibold text-slate-300 uppercase tracking-wider">Rooftop Solar PV Capacity</label>
+                  <span id="solar-val" class="text-sm font-bold text-solar-400">2.0 kWp</span>
+                </div>
+                <input type="range"
